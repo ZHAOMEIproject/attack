@@ -9,20 +9,71 @@ const { WITHDRAW_loc_getsign } = require("./tool/sign/loc_getsign");
 var contractinfo = new Object();
 async function main() {
     var [owner, addr1, addr2] = await ethers.getSigners();
+    {//info
+        var ctokenaddress = "0x15a4F755caAb62e60175342199b6d139d519b7C3"
+        var WETHaddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+        // var CWETHaddress = "0xAffd437801434643B734D0B2853654876F66f7D7";
+    }
+    {
+        var CTokenArtifact = await artifacts.readArtifact("CErc20");
+        var CTOKEN20 = new ethers.Contract(
+            ctokenaddress,
+            CTokenArtifact.abi,
+            owner
+        );
+        var compaddress = await CTOKEN20.comptroller()
+        var compArtifact = await artifacts.readArtifact("Comptroller");
+        var comp = new ethers.Contract(
+            compaddress,
+            compArtifact.abi,
+            owner
+        );
+        // {//weth
+        //     var WETH9Artifact = await artifacts.readArtifact("WETH9");
+        //     var WETH = new ethers.Contract(
+        //         WETHaddress,
+        //         WETH9Artifact.abi,
+        //         owner
+        //     );
+        //     await WETH.deposit({ value: ethers.parseEther("1") })
+        //     console.log("WETH.balanceOf", await WETH.balanceOf(owner));
+        //     var CWETH = new ethers.Contract(
+        //         CWETHaddress,
+        //         CTokenArtifact.abi,
+        //         owner
+        //     );
+        // }
+    }
+    {
+        let getAllMarkets = await comp.getAllMarkets()
+        console.log(
+            // "getAllMarkets:", getAllMarkets,
+            "\n oracle : ", await comp.oracle(),
+            "\n comp : ", compaddress,
+        );
+        let tasks = Array();
+        for (let i in getAllMarkets) {
+            const element = getAllMarkets[i];
+            tasks.push(logtokeninfo(element, comp))
+            // break
+        }
+        let tokeninfos = await Promise.all(tasks);
+        console.log(tokeninfos);
+        return
+    }
+    {//doing
+        await comp.enterMarkets(
+            [CWETHaddress]
+        )
+        await WETH.approve(CWETHaddress, ethers.parseEther("1000"))
+        await CWETH.mint(ethers.parseEther("0.1"))
+        console.log("CWETH.balanceOf", await CWETH.balanceOf(owner));
+        await CTOKEN20.borrow(100)
+    }
 
 
-    let Artifact = await artifacts.readArtifact("Qore");
-    var Qore = new ethers.Contract(
-        "0xF70314eb9c7Fe7D88E6af5aa7F898b3A162dcd48",
-        Artifact.abi,
-        owner
-    );
-    console.log(await Qore.allMarkets());
 
-
-
-
-
+    return
 }
 main().catch((error) => {
     console.error(error);
@@ -46,4 +97,29 @@ async function decimal2big(token, value) {
 }
 async function decimal2show(token, value) {
     return Math.floor(Number(value / (10n ** await token.decimals())))
+}
+
+async function logtokeninfo(ctokenaddress, comp) {
+    var [owner, addr1, addr2] = await ethers.getSigners();
+    let CTokenArtifact = await artifacts.readArtifact("CErc20");
+    var CTOKEN20 = new ethers.Contract(
+        ctokenaddress,
+        CTokenArtifact.abi,
+        owner
+    );
+    let market = await comp.markets(ctokenaddress);
+    let PriceOracleArtifact = await artifacts.readArtifact("PriceOracle")
+    var PriceOracle = new ethers.Contract(
+        await comp.oracle(),
+        PriceOracleArtifact.abi,
+        owner
+    );
+    return (
+        await CTOKEN20.name() + " : " + ctokenaddress +
+        "\n SUPPLY: " + await CTOKEN20.totalSupply() +
+        "\n collateralFactor: " + market.collateralFactorMantissa +
+        "\n price: " + await PriceOracle.getUnderlyingPrice(ctokenaddress) +
+        // "\n uniprice: " +
+        ""
+    );
 }
