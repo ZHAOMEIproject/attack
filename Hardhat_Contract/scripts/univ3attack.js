@@ -1,7 +1,7 @@
-// npx hardhat run scripts/1test.js --network dev
-// npx hardhat run scripts/1test.js --network hardhat
-// npx hardhat run scripts/1test.js --network zhaomei
-// npx hardhat run scripts/1test.js --network mzhaomei
+// npx hardhat run scripts/univ3attack.js --network dev
+// npx hardhat run scripts/univ3attack.js --network hardhat
+// npx hardhat run scripts/univ3attack.js --network zhaomei
+// npx hardhat run scripts/univ3attack.js --network mzhaomei
 const hre = require("hardhat");
 const { writer_info, writer_info_all, writer_info_all_proxy } = require('./tool/hh_log.js');
 const { getcontractinfo } = require('./tool/id-readcontracts');
@@ -36,9 +36,6 @@ async function main() {
             );
         }
         {
-            console.log(
-                await Vault.
-            );
             await WETH.deposit({ value: ethers.parseEther("1") })
             await WETH.transfer(Vaultaddress, ethers.parseEther("1"))
 

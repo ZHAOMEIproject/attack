@@ -7,4 +7,4 @@ require('@openzeppelin/hardhat-upgrades');
 
 /** @type import('hardhat/config').HardhatUserConfig */
 const secretinfo = require(`../../zm_privateinfo/.secret.js`);
-module.exports = secretinfo.hardhatset;
+module.exports = secretinfo.attackhardhat;

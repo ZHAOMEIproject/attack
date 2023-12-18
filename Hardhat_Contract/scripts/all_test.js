@@ -10,7 +10,7 @@ var contractinfo = new Object();
 async function main() {
     var [owner, addr1, addr2] = await ethers.getSigners();
     {//info
-        var ctokenaddress = "0x15a4F755caAb62e60175342199b6d139d519b7C3"
+        var ctokenaddress = "0xE554E874c9c60E45F1Debd479389C76230ae25A8"
         var WETHaddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
         // var CWETHaddress = "0xAffd437801434643B734D0B2853654876F66f7D7";
     }
@@ -70,9 +70,6 @@ async function main() {
         console.log("CWETH.balanceOf", await CWETH.balanceOf(owner));
         await CTOKEN20.borrow(100)
     }
-
-
-
     return
 }
 main().catch((error) => {
@@ -115,10 +112,10 @@ async function logtokeninfo(ctokenaddress, comp) {
         owner
     );
     return (
-        await CTOKEN20.name() + " : " + ctokenaddress +
-        "\n SUPPLY: " + await CTOKEN20.totalSupply() +
-        "\n collateralFactor: " + market.collateralFactorMantissa +
-        "\n price: " + await PriceOracle.getUnderlyingPrice(ctokenaddress) +
+        await CTOKEN20.name() + " : " + ctokenaddress + " token : " + await CTOKEN20.underlying() +
+        " \n SUPPLY: " + await CTOKEN20.totalSupply() +
+        " \n collateralFactor: " + market.collateralFactorMantissa +
+        " \n price: " + await PriceOracle.getUnderlyingPrice(ctokenaddress) +
         // "\n uniprice: " +
         ""
     );
