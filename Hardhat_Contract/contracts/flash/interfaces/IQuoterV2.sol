@@ -95,4 +95,49 @@ interface IQuoterV2 {
             uint32 initializedTicksCrossed,
             uint256 gasEstimate
         );
+        
+
+    struct QuoteExactInputSingleV3Params {
+        address tokenIn;
+        address tokenOut;
+        uint256 amountIn;
+        int24 tickSpacing;
+        uint160 sqrtPriceLimitX96;
+    }
+
+    struct QuoteExactInputSingleV2Params {
+        address tokenIn;
+        address tokenOut;
+        bool stable;
+        uint256 amountIn;
+    }
+
+    /// @notice Returns the amount out received for a given exact input but for a swap of a single pool
+    /// @param params The params for the quote, encoded as `QuoteExactInputSingleParams`
+    /// tokenIn The token being swapped in
+    /// tokenOut The token being swapped out
+    /// tickSpacing The tickSpacing of the token pool to consider for the pair
+    /// amountIn The desired input amount
+    /// sqrtPriceLimitX96 The price limit of the pool that cannot be exceeded by the swap
+    /// @return amountOut The amount of `tokenOut` that would be received
+    /// @return sqrtPriceX96After The sqrt price of the pool after the swap
+    /// @return initializedTicksCrossed The number of initialized ticks that the swap crossed
+    /// @return gasEstimate The estimate of the gas that the swap consumes
+    function quoteExactInputSingleV3(QuoteExactInputSingleV3Params memory params)
+        external
+        returns (uint256 amountOut, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate);
+
+    /// @notice Returns the amount out received for a given exact input but for a swap of a single V2 pool
+    /// @param params The params for the quote, encoded as `QuoteExactInputSingleV2Params`
+    /// tokenIn The token being swapped in
+    /// tokenOut The token being swapped out
+    /// stable The boolean representing volatile (false) or stable (true)
+    /// amountIn The desired input amount
+    /// @return amountOut The amount of `tokenOut` that would be received
+    function quoteExactInputSingleV2(QuoteExactInputSingleV2Params memory params)
+        external
+        returns (uint256 amountOut);
+
+    
+    function factory() external view returns (address);
 }

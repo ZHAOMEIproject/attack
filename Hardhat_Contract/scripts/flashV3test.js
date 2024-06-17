@@ -161,7 +161,7 @@ async function main() {
             fee2: fee,
             fee3: fee,
         }
-        await flashV3test.initSwap(
+        await flashV3test.stakein(
             flashinput
         )
     }
