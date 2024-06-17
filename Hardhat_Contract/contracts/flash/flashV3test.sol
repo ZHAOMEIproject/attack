@@ -6,7 +6,7 @@ import './interfaces/IQuoterV2.sol';
 import './interfaces/IPancakeV3Factory.sol';
 
 import './library/structinfo.sol';
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts@4.9.3/access/Ownable.sol";
 import "hardhat/console.sol";
 contract flashV3test is structinfo, Ownable{
     // // uint256 public immutable sil=1000-2;
