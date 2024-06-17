@@ -7,8 +7,10 @@ import './interfaces/IPancakeV3Factory.sol';
 
 import './library/structinfo.sol';
 import "@openzeppelin/contracts@4.9.3/access/Ownable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
 import "hardhat/console.sol";
 contract flashV3test is structinfo, Ownable{
+    uint256 public immutable decimals=3;
     // // uint256 public immutable sil=1000-2;
     // constructor(s_stakeininfo_input memory params){
     //     stakein(params);
@@ -42,10 +44,10 @@ contract flashV3test is structinfo, Ownable{
     {
         amountIn=
         msg.value * 
-        stakeininfo_input.multiplier/1000;
+        stakeininfo_input.multiplier/10**decimals;
         wiseamount=
         amountIn * 
-        stakeininfo_input.limit_cbethprice*stakeininfo_input.sil/10**(3+18);
+        stakeininfo_input.limit_cbethprice*stakeininfo_input.sil/10**(decimals+18);
         (
             amountOut,sqrtPriceX96After,,
         )=stakeininfo_input.quoter.quoteExactInputSingle(
@@ -65,7 +67,7 @@ contract flashV3test is structinfo, Ownable{
     {
         amountIn=
         stakeoutinfo_input.withdrawethbalance * 
-        stakeoutinfo_input.multiplier/1000;
+        stakeoutinfo_input.multiplier/10**decimals;
         wiseamount=
         amountIn * 
         stakeoutinfo_input.limit_ethprice*stakeoutinfo_input.sil/10**(3+18);
