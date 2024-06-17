@@ -42,7 +42,7 @@ contract flashV3test is structinfo, Ownable{
     {
         amountIn=
         msg.value * 
-        stakeininfo_input.multiplier;
+        stakeininfo_input.multiplier/1000;
         wiseamount=
         amountIn * 
         stakeininfo_input.limit_cbethprice*stakeininfo_input.sil/10**(3+18);
@@ -65,7 +65,7 @@ contract flashV3test is structinfo, Ownable{
     {
         amountIn=
         stakeoutinfo_input.withdrawethbalance * 
-        stakeoutinfo_input.multiplier;
+        stakeoutinfo_input.multiplier/1000;
         wiseamount=
         amountIn * 
         stakeoutinfo_input.limit_ethprice*stakeoutinfo_input.sil/10**(3+18);

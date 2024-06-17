@@ -25,7 +25,7 @@ async function main() {
         WETH: "0x4200000000000000000000000000000000000006",
         CBETH: "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22",
         fee: 100,
-        lever: 9,
+        multiplier: 10 * 1000,
         swap: "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
         sil: 1000 - 2
     }
@@ -33,7 +33,7 @@ async function main() {
         info.WETH,//WETH
         info.CBETH,//CBETH
         info.fee,//fee
-        info.lever,//杠杆
+        info.multiplier,//杠杆
         info.swap,//swap address
         info.cWETHv3,
 
@@ -44,7 +44,7 @@ async function main() {
         info.WETH,//WETH
         info.CBETH,//CBETH
         info.fee,//fee
-        info.lever,//杠杆
+        info.multiplier,//杠杆
         info.swap,//swap address
         info.cWETHv3,
 
