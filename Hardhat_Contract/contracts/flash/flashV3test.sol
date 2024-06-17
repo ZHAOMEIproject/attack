@@ -8,10 +8,9 @@ import './interfaces/IPancakeV3Factory.sol';
 import './library/structinfo.sol';
 import "@openzeppelin/contracts@4.9.3/access/Ownable.sol";
 // import "@openzeppelin/contracts/access/Ownable.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 contract flashV3test is structinfo, Ownable{
     uint256 public immutable decimals=3;
-    // // uint256 public immutable sil=1000-2;
     // constructor(s_stakeininfo_input memory params){
     //     stakein(params);
     //     selfdestruct(payable(msg.sender));
