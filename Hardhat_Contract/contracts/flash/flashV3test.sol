@@ -61,7 +61,7 @@ contract flashV3test is structinfo, Ownable{
     }
     function cbeth2ethprice(
         s_stakeoutinfo_input memory stakeoutinfo_input
-    )payable public returns(uint256 amountIn,uint256 wiseamount,uint256 amountOut,uint160 sqrtPriceX96After,bool flag)
+    ) public returns(uint256 amountIn,uint256 wiseamount,uint256 amountOut,uint160 sqrtPriceX96After,bool flag)
     {
         amountIn=
         stakeoutinfo_input.withdrawethbalance * 
