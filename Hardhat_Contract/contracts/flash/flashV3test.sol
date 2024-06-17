@@ -150,10 +150,32 @@ contract flashV3test is structinfo, Ownable{
     }
     // function pancakeV3SwapCallback(
     function uniswapV3SwapCallback(
+        int256          amount0Delta,
+        int256          amount1Delta,
+        bytes calldata  _data
+    ) external  {
+        _V3SwapCallback(
+            amount0Delta,
+            amount1Delta,
+            _data
+        );
+    }
+    function pancakeV3SwapCallback(
+        int256          amount0Delta,
+        int256          amount1Delta,
+        bytes calldata  _data
+    ) external  {
+        _V3SwapCallback(
+            amount0Delta,
+            amount1Delta,
+            _data
+        );
+    }
+    function _V3SwapCallback(
         int256 amount0Delta,
         int256 amount1Delta,
         bytes calldata _data
-    ) external  {
+    )private{
         SwapCallbackData memory data = abi.decode(_data, (SwapCallbackData));
         if (data.stakein) {
             uint256 eth_need= uint256(IPancakeV3Pool(msg.sender).token0() == address(data.WETH) ? amount0Delta:amount1Delta);
