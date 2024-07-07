@@ -66,16 +66,16 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
         amountOut = 
         stakeoutinfo_input.withdrawethbalance* 
         stakeoutinfo_input.multiplier/10**decimals;
-        
-        wiseamount = amountOut* 
-        stakeoutinfo_input.limit_ethprice*10**(decimals+18)/stakeoutinfo_input.sil;
+        wiseamount = amountOut*10**(decimals+18)/ 
+        stakeoutinfo_input.limit_ethprice
+        /stakeoutinfo_input.sil;
         (
             amountIn,sqrtPriceX96After,,
-        )=stakeoutinfo_input.quoter.quoteExactInputSingle(
-            IQuoterV2.QuoteExactInputSingleParams(
+        )=stakeoutinfo_input.quoter.quoteExactOutputSingle(
+            IQuoterV2.QuoteExactOutputSingleParams(
                 address(stakeoutinfo_input.CBETH),
                 address(stakeoutinfo_input.WETH),
-                wiseamount,
+                amountOut,
                 stakeoutinfo_input.fee,
                 0
             )
@@ -91,6 +91,19 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
             ", amountOut: ", uint2str(amountOut), 
             ", wish amount: ", uint2str(wiseamount)
         )));
+        bytes memory data =abi.encode(
+            opcodeAdata({
+                stakein:1,
+                data:
+                abi.encode(SwapCallbackData({
+                    WETH:params.WETH,
+                    CBETH:params.CBETH,
+                    ethbalance:msg.value,
+                    origin:msg.sender,
+                    slp_WETH:params.slp_WETH
+                }))
+            })
+        );
         IPancakeV3Factory factory=IPancakeV3Factory(params.quoter.factory());
         IPancakeV3Pool pool = IPancakeV3Pool(
             factory.getPool(
@@ -103,32 +116,30 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
             address(params.WETH)==pool.token0(),
             int256(amountIn),
             sqrtPriceX96After,
-            abi.encode(
-                SwapCallbackData({
-                    WETH:params.WETH,
-                    CBETH:params.CBETH,
-                    ethbalance:msg.value,
-                    origin:msg.sender,
-                    slp_WETH:params.slp_WETH,
-                    stakein:1
-                })
-            )
+            data
         );
     }
     function stakeout(s_stakeoutinfo_input memory params)public {
-        (uint256 amountIn,uint256 wiseamount,uint256 amountOut,uint160 sqrtPriceX96After,bool flag)
+        (uint256 amountIn,uint256 wiseamount,,uint160 sqrtPriceX96After,bool flag)
         =cbeth2ethprice(params);
-        console.log(
-            amountIn,
-            wiseamount,
-            amountOut
-        );
-        require(false,"test");
         require(flag,string(abi.encodePacked(
             "bad price",
-            ", amountOut: ", uint2str(amountOut), 
+            ", amountIn: ", uint2str(amountIn), 
             ", wish amount: ", uint2str(wiseamount)
         )));
+        bytes memory data = abi.encode(
+            opcodeAdata({
+                stakein:0,
+                data:
+                abi.encode(SwapCallbackData({
+                    WETH:params.WETH,
+                    CBETH:params.CBETH,
+                    ethbalance:params.withdrawethbalance,
+                    origin:msg.sender,
+                    slp_WETH:params.slp_WETH
+                }))
+            })
+        );
         IPancakeV3Factory factory=IPancakeV3Factory(params.quoter.factory());
         IPancakeV3Pool pool = IPancakeV3Pool(
             factory.getPool(
@@ -141,20 +152,14 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
             address(params.CBETH)==pool.token0(),
             int256(amountIn),
             sqrtPriceX96After,
-            abi.encode(
-                SwapCallbackData({
-                    WETH:params.WETH,
-                    CBETH:params.CBETH,
-                    ethbalance:params.withdrawethbalance,
-                    origin:msg.sender,
-                    slp_WETH:params.slp_WETH,
-                    stakein:0
-                })
-            )
+            data
         );
         
     }
-    // function pancakeV3SwapCallback(
+    // function one_changing_collateral()public{
+
+    // }
+
     function uniswapV3SwapCallback(
         int256          amount0Delta,
         int256          amount1Delta,
@@ -182,7 +187,7 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
         int256 amount1Delta,
         bytes calldata _data
     )private{
-        SwapCallbackData memory data = abi.decode(_data, (SwapCallbackData));
+        opcodeAdata memory data = abi.decode(_data, (opcodeAdata));
         if (data.stakein==1) {
             _stakein(
                 amount0Delta,
@@ -196,6 +201,19 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
                 _data
             );
         }
+        //  else if(data.stakein==2){
+        //     _one_changing_collateral(
+        //         amount0Delta,
+        //         amount1Delta,
+        //         _data
+        //     );
+        // }
+        //  else if(data.stakein==3){
+        //     if (amount0Delta <= 0 && amount1Delta <= 0) revert V3InvalidSwap(); // swaps entirely within 0-liquidity regions are not supported
+        //     (, address payer) = abi.decode(data, (bytes, address));
+        //     bytes calldata path = data.toBytes(0);
+
+        // }
 
     }
     receive() external payable {

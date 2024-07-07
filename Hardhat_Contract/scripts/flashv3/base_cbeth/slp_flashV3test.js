@@ -11,21 +11,29 @@ async function main() {
             await ethers.provider.getBalance(owner.address)
         );
     }
-    let cbethprice = 0.853868;
+    let cbethprice = 0.853794;
+    let multiplier = 10;
+    let eth_amount = 1;
+    let swapfee = 1 / 10 ** 4
+    let totalfee = (swapfee * 2 * 3.5 * multiplier)
+    console.log(
+        "totalfee:", totalfee * 100,
+        "one mult fee:", totalfee * 100 / multiplier
+    );
     let info = {
         eth2cbeth_price: ethers.parseEther(cbethprice.toString()),
-        ethvalue: ethers.parseEther("1"),
+        ethvalue: ethers.parseEther(eth_amount.toString()),
 
-        cbeth2eth_price: ethers.parseEther((1 / cbethprice).toString()),
-        withdrawethbalance: ethers.parseEther("1"),
+        cbeth2eth_price: ethers.parseEther((eth_amount / cbethprice).toString()),
+        withdrawethbalance: ethers.parseEther((eth_amount * (1 - totalfee)).toString()),
 
         slp_cWETHv3: "0x8F44Fd754285aa6A2b8B9B97739B79746e0475a7",
         WETH: "0x4200000000000000000000000000000000000006",
         CBETH: "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452",
-        fee: 100,
-        multiplier: 2 * (10 ** 4),
+        fee: swapfee * 10 ** 6,//
+        multiplier: multiplier * (10 ** 4),
         swap: "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
-        sil: (10 ** 4) - 10
+        sil: (10 ** 4) - 100
     }
     info["stakein"] = [
         info.WETH,//WETH
@@ -61,9 +69,6 @@ async function main() {
     // var deployerNonce = await ethers.provider.getTransactionCount(owner.address);
     // var predictedAddress = await predictContractAddress(owner.address, (deployerNonce + 1));
     var slp_flashV3test = await ethers.deployContract("slp_flashV3test");
-    await slp_flashV3test.stakeout(
-        info.stakeout)
-    return
     let debttoken_address = (await slp_flashV3test.getdebttokenadd(slp_cWETHv3, info.WETH)).variableDebtTokenAddress;
 
     let debttoken = new ethers.Contract(
@@ -89,15 +94,16 @@ async function main() {
         "scbeth.balanceOf:", await scbeth.balanceOf(owner),
         "debttoken.balanceOf:", await debttoken.balanceOf(owner)
     );
-
     await scbeth.approve(slp_flashV3test, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-
+    let bf_amount = await ethers.provider.getBalance(owner.address);
     await slp_flashV3test.stakeout(
         info.stakeout)
+    let af_amount = await ethers.provider.getBalance(owner.address);
     console.log(
         ethers.formatEther(
-            await ethers.provider.getBalance(owner.address)
-        )
+            af_amount - bf_amount
+        ),
+        Number(af_amount - bf_amount) / 10 ** 16
     );
 }
 main().catch((error) => {

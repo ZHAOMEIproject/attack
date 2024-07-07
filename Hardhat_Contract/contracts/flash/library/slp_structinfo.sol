@@ -32,29 +32,44 @@ contract slp_structinfo{
         uint256 sil;
     }
 
+    struct opcodeAdata {
+        uint256 stakein;
+        bytes data;
+    }
+
     struct SwapCallbackData {
         IWETH WETH;
         IERC20 CBETH;
         uint256 ethbalance;
         address origin;
         IPool slp_WETH;
-        uint256 stakein;
     }
-    struct changing_collateralDate{
+
+
+
+    struct one_changing_collateralDate{
         IERC20 before_token;
         IERC20 after_token;
-        IERC20 middle_token;
-        uint256 b2aPricelimit;
+        uint24 fee;
+        IQuoterV2 quoter;
         IPool slp_WETH;
+
+        uint256 b2aPricelimit;
         address origin;
     }
-    // struct s_swapinfo{
-    //     uint256 amountIn;
-    //     uint256 wiseamount;
-    //     uint256 amountOut;
-    //     uint160 sqrtPriceX96After;
-    //     bool flag;
-    // }
+    struct twice_changing_collateralDate{
+        IERC20 before_token;
+        IERC20 after_token;
+        uint24 fee;
+        IQuoterV2 quoter;
+        IPool slp_WETH;
+
+        uint256 b2aPricelimit;
+        address origin;
+        
+        IERC20 middle_token;
+    }
+
 
 
 }
