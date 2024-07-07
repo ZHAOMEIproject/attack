@@ -2,6 +2,7 @@
 // npx hardhat run scripts/1test.js --network hardhat
 // npx hardhat run scripts/1test.js --network zhaomei
 // npx hardhat run scripts/1test.js --network mzhaomei
+// npx hardhat run scripts/1test.js --network base
 const hre = require("hardhat");
 const { writer_info, writer_info_all, writer_info_all_proxy } = require('./tool/hh_log.js');
 const { getcontractinfo } = require('./tool/id-readcontracts');
@@ -14,11 +15,12 @@ async function main() {
             await ethers.provider.getBalance(owner.address)
         );
     }
-    let info = {
-        eth2cbeth_price: ethers.parseEther("0.93153"),
-        ethvalue: ethers.parseEther("0.1"),
 
-        cbeth2eth_price: ethers.parseEther((1 / 0.93153).toString()),
+    let info = {
+        eth2cbeth_price: ethers.parseEther("0.9316"),
+        ethvalue: ethers.parseEther("0.001"),
+
+        cbeth2eth_price: ethers.parseEther((1 / 0.9316).toString()),
         withdrawethbalance: ethers.parseEther("0.01"),
 
         cWETHv3: "0x46e6b214b524310239732D51387075E0e70970bf",
@@ -26,8 +28,9 @@ async function main() {
         CBETH: "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22",
         fee: 100,
         multiplier: 10 * 1000,
-        swap: "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
-        sil: 1000 - 2
+        swap: "0xB048Bbc1Ee6b733FFfCFb9e9CeF7375518e25997",
+        sil: 1000 - 2,
+        flashV3test: "0xEAb3F87AaE570e8E4fb4b79a954047A8aA8B5ff8",
     }
     info["stakein"] = [
         info.WETH,//WETH
@@ -58,17 +61,25 @@ async function main() {
         (await artifacts.readArtifact("CometMainInterface")).abi,
         owner
     );
-    var deployerNonce = await ethers.provider.getTransactionCount(owner.address);
-    var predictedAddress = await predictContractAddress(owner.address, (deployerNonce + 1));
-    await cWETHv3.allow(predictedAddress, true);
-    var flashV3test = await ethers.deployContract("flashV3test");
-    await flashV3test.stakein(
-        info.stakein
-        , {
-            value: info.ethvalue
-        })
-    await flashV3test.stakeout(
-        info.stakeout)
+    var flashV3test = new ethers.Contract(
+        info.flashV3test,
+        (await artifacts.readArtifact("flashV3test")).abi,
+        owner
+    );
+    // await cWETHv3.allow(flashV3test.target, true);
+    console.log(info.stakein);
+    await owner.sendTransaction({
+        to: "0x8C327f1Aa6327F01A9A74cEc696691cEAAc680e2",
+        gasPrice: 18000000n
+    })
+
+    // await flashV3test.stakein(
+    //     info.stakein
+    //     , {
+    //         value: ethers.parseEther("0.565"),
+    //         // gasPrice: 18000000n
+    //     })
+
 }
 main().catch((error) => {
     console.error(error);

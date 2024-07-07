@@ -5,7 +5,7 @@ import '../interfaces/IQuoterV2.sol';
 import '../interfaces/IPancakeV3Factory.sol';
 import '../comp/CometMainInterface.sol';
 import '../interfaces/IWETH.sol';
-contract structinfo{
+contract slp_structinfo{
     struct s_stakeininfo_input{
         IWETH WETH;
         IERC20 CBETH;
@@ -16,6 +16,7 @@ contract structinfo{
 
         uint256 limit_cbethprice;
         uint256 sil;
+        IERC20 scbeth;
     }
     struct s_stakeoutinfo_input{
         IWETH WETH;
@@ -28,6 +29,7 @@ contract structinfo{
         uint256 limit_ethprice;
         uint256 withdrawethbalance;
         uint256 sil;
+        IERC20 scbeth;
     }
 
     struct SwapCallbackData {
@@ -36,7 +38,8 @@ contract structinfo{
         uint256 ethbalance;
         address origin;
         CometMainInterface cWETHv3;
-        bool stakein;
+        uint256 stakein;
+        IERC20 scbeth;
     }
     // struct s_swapinfo{
     //     uint256 amountIn;
