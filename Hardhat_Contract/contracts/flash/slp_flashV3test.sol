@@ -9,7 +9,7 @@ import './mod/slpswapmod.sol';
 import './mod/help.sol';
 import "hardhat/console.sol";
 contract slp_flashV3test is slp_structinfo,slpswapmod,help{
-    uint256 public immutable decimals=3;
+    uint256 public immutable decimals=4;
     // constructor(s_stakeininfo_input memory params){
     //     stakein(params);
     //     selfdestruct(payable(msg.sender));
@@ -63,24 +63,24 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
         s_stakeoutinfo_input memory stakeoutinfo_input
     ) public returns(uint256 amountIn,uint256 wiseamount,uint256 amountOut,uint160 sqrtPriceX96After,bool flag)
     {
-        amountIn=
-        stakeoutinfo_input.withdrawethbalance * 
+        amountOut = 
+        stakeoutinfo_input.withdrawethbalance* 
         stakeoutinfo_input.multiplier/10**decimals;
-        wiseamount=
-        amountIn * 
-        stakeoutinfo_input.limit_ethprice*stakeoutinfo_input.sil/10**(3+18);
+        
+        wiseamount = amountOut* 
+        stakeoutinfo_input.limit_ethprice*10**(decimals+18)/stakeoutinfo_input.sil;
         (
-            amountOut,sqrtPriceX96After,,
+            amountIn,sqrtPriceX96After,,
         )=stakeoutinfo_input.quoter.quoteExactInputSingle(
             IQuoterV2.QuoteExactInputSingleParams(
                 address(stakeoutinfo_input.CBETH),
                 address(stakeoutinfo_input.WETH),
-                amountIn,
+                wiseamount,
                 stakeoutinfo_input.fee,
                 0
             )
         );
-        flag=wiseamount<amountOut;
+        flag=wiseamount>amountIn;
     }
 
     function stakein(s_stakeininfo_input memory params)payable public {
@@ -109,9 +109,8 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
                     CBETH:params.CBETH,
                     ethbalance:msg.value,
                     origin:msg.sender,
-                    cWETHv3:params.cWETHv3,
-                    stakein:1,
-                    scbeth:params.scbeth
+                    slp_WETH:params.slp_WETH,
+                    stakein:1
                 })
             )
         );
@@ -119,6 +118,12 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
     function stakeout(s_stakeoutinfo_input memory params)public {
         (uint256 amountIn,uint256 wiseamount,uint256 amountOut,uint160 sqrtPriceX96After,bool flag)
         =cbeth2ethprice(params);
+        console.log(
+            amountIn,
+            wiseamount,
+            amountOut
+        );
+        require(false,"test");
         require(flag,string(abi.encodePacked(
             "bad price",
             ", amountOut: ", uint2str(amountOut), 
@@ -142,9 +147,8 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
                     CBETH:params.CBETH,
                     ethbalance:params.withdrawethbalance,
                     origin:msg.sender,
-                    cWETHv3:params.cWETHv3,
-                    stakein:0,
-                    scbeth:params.scbeth
+                    slp_WETH:params.slp_WETH,
+                    stakein:0
                 })
             )
         );

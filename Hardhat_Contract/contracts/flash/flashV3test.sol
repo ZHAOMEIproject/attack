@@ -10,7 +10,7 @@ import './library/structinfo.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "hardhat/console.sol";
 contract flashV3test is structinfo, Ownable{
-    uint256 public immutable decimals=3;
+    uint256 public immutable decimals=4;
     // constructor(s_stakeininfo_input memory params){
     //     stakein(params);
     //     selfdestruct(payable(msg.sender));
@@ -69,7 +69,7 @@ contract flashV3test is structinfo, Ownable{
         stakeoutinfo_input.multiplier/10**decimals;
         wiseamount=
         amountIn * 
-        stakeoutinfo_input.limit_ethprice*stakeoutinfo_input.sil/10**(3+18);
+        stakeoutinfo_input.limit_ethprice*stakeoutinfo_input.sil/10**(decimals+18);
         (
             amountOut,sqrtPriceX96After,,
         )=stakeoutinfo_input.quoter.quoteExactInputSingle(
@@ -203,7 +203,7 @@ contract flashV3test is structinfo, Ownable{
             data.WETH.transfer(data.origin, data.ethbalance);
 
             // data.WETH.withdraw((data.ethbalance));
-            // payable(msg.sender).transfer(data.ethbalance);
+            // payable(data.origin).transfer(data.ethbalance);
         }
     }
     function uint2str(uint256 _i) internal pure returns (string memory) {

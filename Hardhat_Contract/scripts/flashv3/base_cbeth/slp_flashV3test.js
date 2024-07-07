@@ -14,19 +14,18 @@ async function main() {
     let cbethprice = 0.853868;
     let info = {
         eth2cbeth_price: ethers.parseEther(cbethprice.toString()),
-        ethvalue: ethers.parseEther("0.001"),
+        ethvalue: ethers.parseEther("1"),
 
         cbeth2eth_price: ethers.parseEther((1 / cbethprice).toString()),
-        withdrawethbalance: ethers.parseEther("0.001"),
+        withdrawethbalance: ethers.parseEther("1"),
 
         slp_cWETHv3: "0x8F44Fd754285aa6A2b8B9B97739B79746e0475a7",
         WETH: "0x4200000000000000000000000000000000000006",
         CBETH: "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452",
         fee: 100,
-        multiplier: 2 * 1000,
+        multiplier: 2 * (10 ** 4),
         swap: "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
-        sil: 1000 - 100,
-        scbeth: "0xfA48A40DAD139e9B1aF8dc82F37Da58cC3cA2867"
+        sil: (10 ** 4) - 10
     }
     info["stakein"] = [
         info.WETH,//WETH
@@ -38,7 +37,6 @@ async function main() {
 
         info.eth2cbeth_price,//wish price
         info.sil,
-        info.scbeth
     ]
     info["stakeout"] = [
         info.WETH,//WETH
@@ -51,40 +49,53 @@ async function main() {
         info.cbeth2eth_price,//wish price
         info.withdrawethbalance,//wish price
         info.sil,
-        info.scbeth
     ]
     var slp_cWETHv3 = new ethers.Contract(
         info.slp_cWETHv3,
-        (await artifacts.readArtifact("IPool")).abi,
+        (await artifacts.readArtifact(
+            "contracts/flash/seamlessprotocol/interfaces/IPool.sol:IPool"
+        )).abi,
         owner
     );
+    await slp_cWETHv3.setUserEMode(1);
     // var deployerNonce = await ethers.provider.getTransactionCount(owner.address);
     // var predictedAddress = await predictContractAddress(owner.address, (deployerNonce + 1));
-    await wait(1000);
-    let debttokeninfo = await slp_cWETHv3.getReserveData(info.WETH);
-    console.log(debttokeninfo.variableDebtTokenAddress);
+    var slp_flashV3test = await ethers.deployContract("slp_flashV3test");
+    await slp_flashV3test.stakeout(
+        info.stakeout)
     return
-    let debttoken_address = debttokeninfo.variableDebtTokenAddress;
+    let debttoken_address = (await slp_flashV3test.getdebttokenadd(slp_cWETHv3, info.WETH)).variableDebtTokenAddress;
+
     let debttoken = new ethers.Contract(
         debttoken_address,
-        (await artifacts.readArtifact("ICreditDelegationToken")).abi,
+        (await artifacts.readArtifact("VariableDebtToken")).abi,
         owner
     );
-    var slp_flashV3test = await ethers.deployContract("slp_flashV3test");
     await debttoken.approveDelegation(
         slp_flashV3test,
         "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     )
+
     await slp_flashV3test.stakein(
-        info.stakein
-        , {
-            value: info.ethvalue
-        })
+        info.stakein, {
+        value: info.ethvalue
+    })
+    let scbeth = new ethers.Contract(
+        (await slp_flashV3test.getdebttokenadd(slp_cWETHv3, info.CBETH)).aTokenAddress,
+        (await artifacts.readArtifact("contracts/flash/seamlessprotocol/dependencies/openzeppelin/contracts/IERC20.sol:IERC20")).abi,
+        owner
+    );
+    console.log(
+        "scbeth.balanceOf:", await scbeth.balanceOf(owner),
+        "debttoken.balanceOf:", await debttoken.balanceOf(owner)
+    );
+
+    await scbeth.approve(slp_flashV3test, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+
     await slp_flashV3test.stakeout(
         info.stakeout)
-
     console.log(
-        ethers.utils.formatEther(
+        ethers.formatEther(
             await ethers.provider.getBalance(owner.address)
         )
     );

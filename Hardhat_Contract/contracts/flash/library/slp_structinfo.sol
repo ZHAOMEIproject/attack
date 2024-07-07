@@ -5,6 +5,8 @@ import '../interfaces/IQuoterV2.sol';
 import '../interfaces/IPancakeV3Factory.sol';
 import '../comp/CometMainInterface.sol';
 import '../interfaces/IWETH.sol';
+import '../seamlessprotocol/interfaces/IPool.sol';
+
 contract slp_structinfo{
     struct s_stakeininfo_input{
         IWETH WETH;
@@ -12,11 +14,10 @@ contract slp_structinfo{
         uint24 fee;
         uint256 multiplier;
         IQuoterV2 quoter;
-        CometMainInterface cWETHv3;
+        IPool slp_WETH;
 
         uint256 limit_cbethprice;
         uint256 sil;
-        IERC20 scbeth;
     }
     struct s_stakeoutinfo_input{
         IWETH WETH;
@@ -24,12 +25,11 @@ contract slp_structinfo{
         uint24 fee;
         uint256 multiplier;
         IQuoterV2 quoter;
-        CometMainInterface cWETHv3;
+        IPool slp_WETH;
 
         uint256 limit_ethprice;
         uint256 withdrawethbalance;
         uint256 sil;
-        IERC20 scbeth;
     }
 
     struct SwapCallbackData {
@@ -37,9 +37,16 @@ contract slp_structinfo{
         IERC20 CBETH;
         uint256 ethbalance;
         address origin;
-        CometMainInterface cWETHv3;
+        IPool slp_WETH;
         uint256 stakein;
-        IERC20 scbeth;
+    }
+    struct changing_collateralDate{
+        IERC20 before_token;
+        IERC20 after_token;
+        IERC20 middle_token;
+        uint256 b2aPricelimit;
+        IPool slp_WETH;
+        address origin;
     }
     // struct s_swapinfo{
     //     uint256 amountIn;
