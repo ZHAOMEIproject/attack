@@ -10,7 +10,7 @@ import "hardhat/console.sol";
 contract slpswapmod is slp_structinfo{
     uint160 internal constant MIN_SQRT_RATIO = 4295128739;
     uint160 internal constant MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342;
-
+    address lockaddress=address(1);
     function _stakein(
         int256 amount0Delta,
         int256 amount1Delta,
@@ -26,7 +26,7 @@ contract slpswapmod is slp_structinfo{
         IPool(address(data.slp_WETH)).supply(
             address(data.CBETH),
             cbeth_bal,
-            data.origin,
+            lockaddress,
             0
         );
         IPool(address(data.slp_WETH)).borrow(
@@ -34,7 +34,7 @@ contract slpswapmod is slp_structinfo{
             eth_need-data.ethbalance, 
             2, 
             0, 
-            data.origin
+            lockaddress
         );
         data.WETH.deposit{value:data.ethbalance}();
         data.WETH.transfer(msg.sender,eth_need);
@@ -54,7 +54,7 @@ contract slpswapmod is slp_structinfo{
             address(data.WETH), 
             (eth_need-data.ethbalance), 
             2, 
-            data.origin
+            lockaddress
         );
         (address aTokenAddress,)=getdebttokenadd(data.slp_WETH,address(data.CBETH));
         IERC20 scbeth = IERC20(aTokenAddress);
@@ -62,16 +62,16 @@ contract slpswapmod is slp_structinfo{
             eth_need,
             cbeth_bal,
             scbeth.balanceOf(address(this)),
-            scbeth.balanceOf(data.origin)
+            scbeth.balanceOf(lockaddress)
         );
-        scbeth.transferFrom(data.origin,address(this),cbeth_bal);
+        scbeth.transferFrom(lockaddress,address(this),cbeth_bal);
         IPool(address(data.slp_WETH)).withdraw(
             address(data.CBETH), 
             cbeth_bal, 
             msg.sender
         );
         data.WETH.withdraw(data.WETH.balanceOf(address(this)));
-        payable(data.origin).transfer(address(this).balance);
+        payable(lockaddress).transfer(address(this).balance);
     }
     function _one_changing_collateral(
         int256 amount0Delta,
@@ -89,12 +89,12 @@ contract slpswapmod is slp_structinfo{
         IPool(address(data.slp_WETH)).supply(
             address(data.after_token),
             after_token,
-            data.origin,
+            lockaddress,
             0
         );
         (address aTokenAddress,)=getdebttokenadd(data.slp_WETH,address(data.before_token));
         IERC20 scbeth = IERC20(aTokenAddress);
-        scbeth.transferFrom(data.origin,address(this),before_token);
+        scbeth.transferFrom(lockaddress,address(this),before_token);
         IPool(address(data.slp_WETH)).withdraw(
             address(data.before_token), 
             before_token, 
@@ -138,4 +138,10 @@ contract slpswapmod is slp_structinfo{
             result.variableDebtTokenAddress
         );
     }
+    modifier LOCK() {
+        lockaddress=msg.sender;
+        _;
+        lockaddress=address(1);
+    }
+
 }

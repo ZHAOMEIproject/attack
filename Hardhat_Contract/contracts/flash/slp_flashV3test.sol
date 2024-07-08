@@ -10,32 +10,6 @@ import './mod/help.sol';
 import "hardhat/console.sol";
 contract slp_flashV3test is slp_structinfo,slpswapmod,help{
     uint256 public immutable decimals=4;
-    // constructor(s_stakeininfo_input memory params){
-    //     stakein(params);
-    //     selfdestruct(payable(msg.sender));
-    // }
-    function showstakeinfo(
-        s_stakeininfo_input memory stakeininfo_input
-    )public{
-        (,uint256 wiseamount,uint256 amountOut,,bool flag)
-        =eth2cbethprice(stakeininfo_input);
-        require(
-            flag,
-            string(abi.encodePacked(
-                "bad price",
-                ", amountOut: ", uint2str(amountOut), 
-                ", wish amount: ", uint2str(wiseamount)
-            ))
-        );
-        require(
-            flag,
-            string(abi.encodePacked(
-                "good price",
-                ", amountOut: ", uint2str(amountOut), 
-                ", wish amount: ", uint2str(wiseamount)
-            ))
-        );
-    }
     function eth2cbethprice(
         s_stakeininfo_input memory stakeininfo_input
     )payable public returns(uint256 amountIn,uint256 wiseamount,uint256 amountOut,uint160 sqrtPriceX96After,bool flag)
@@ -83,7 +57,7 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
         flag=wiseamount>amountIn;
     }
 
-    function stakein(s_stakeininfo_input memory params)payable public {
+    function stakein(s_stakeininfo_input memory params)LOCK payable public {
         (uint256 amountIn,uint256 wiseamount,uint256 amountOut,uint160 sqrtPriceX96After,bool flag)
         =eth2cbethprice(params);
         require(flag,string(abi.encodePacked(
@@ -99,7 +73,6 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
                     WETH:params.WETH,
                     CBETH:params.CBETH,
                     ethbalance:msg.value,
-                    origin:msg.sender,
                     slp_WETH:params.slp_WETH
                 }))
             })
@@ -119,7 +92,7 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
             data
         );
     }
-    function stakeout(s_stakeoutinfo_input memory params)public {
+    function stakeout(s_stakeoutinfo_input memory params)LOCK public {
         (uint256 amountIn,uint256 wiseamount,,uint160 sqrtPriceX96After,bool flag)
         =cbeth2ethprice(params);
         require(flag,string(abi.encodePacked(
@@ -135,7 +108,6 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
                     WETH:params.WETH,
                     CBETH:params.CBETH,
                     ethbalance:params.withdrawethbalance,
-                    origin:msg.sender,
                     slp_WETH:params.slp_WETH
                 }))
             })
@@ -219,6 +191,6 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
     receive() external payable {
     }
     fallback() external payable {
-        revert('Fallback not allowed');
     }
+    
 }

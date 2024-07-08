@@ -80,7 +80,7 @@ async function main() {
         slp_flashV3test,
         "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     )
-
+    console.log(info.stakein);
     await slp_flashV3test.stakein(
         info.stakein, {
         value: info.ethvalue

@@ -41,10 +41,8 @@ contract slp_structinfo{
         IWETH WETH;
         IERC20 CBETH;
         uint256 ethbalance;
-        address origin;
         IPool slp_WETH;
     }
-
 
 
     struct one_changing_collateralDate{
@@ -55,7 +53,6 @@ contract slp_structinfo{
         IPool slp_WETH;
 
         uint256 b2aPricelimit;
-        address origin;
     }
     struct twice_changing_collateralDate{
         IERC20 before_token;
@@ -65,7 +62,6 @@ contract slp_structinfo{
         IPool slp_WETH;
 
         uint256 b2aPricelimit;
-        address origin;
         
         IERC20 middle_token;
     }
