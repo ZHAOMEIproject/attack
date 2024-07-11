@@ -73,61 +73,67 @@ contract slpswapmod is slp_structinfo{
         data.WETH.withdraw(data.WETH.balanceOf(address(this)));
         payable(lockaddress).transfer(address(this).balance);
     }
-    function _one_changing_collateral(
+    function _twice_changing_collateral(
         int256 amount0Delta,
         int256 amount1Delta,
         bytes calldata _data
     )internal{
-        // lock before_token
-        one_changing_collateralDate memory data = abi.decode(
-            abi.decode(_data, (opcodeAdata)).data, 
-            (one_changing_collateralDate));
-        //旧质押品
-        uint256 before_token= uint256(IPancakeV3Pool(msg.sender).token0() == address(data.before_token) ? amount0Delta:amount1Delta);
-        //新质押品
+        twice_changing_collateralDate memory data = abi.decode(
+            abi.decode(_data, (opcodeAdata)).data, (
+            twice_changing_collateralDate
+        ));
+        //新抵押品
         uint256 after_token= uint256(-(IPancakeV3Pool(msg.sender).token0() == address(data.after_token) ? amount0Delta:amount1Delta));
-        IPool(address(data.slp_WETH)).supply(
-            address(data.after_token),
-            after_token,
-            lockaddress,
-            0
-        );
-        (address aTokenAddress,)=getdebttokenadd(data.slp_WETH,address(data.before_token));
-        IERC20 scbeth = IERC20(aTokenAddress);
-        scbeth.transferFrom(lockaddress,address(this),before_token);
-        IPool(address(data.slp_WETH)).withdraw(
-            address(data.before_token), 
-            before_token, 
-            msg.sender
-        );
+        //中间交换媒介
+        uint256 middle_token= uint256((IPancakeV3Pool(msg.sender).token0() == address(data.middle_token) ? amount0Delta:amount1Delta));
+        {// 存入B
+            
+            IERC20(data.after_token).approve(address(data.slp_WETH),type(uint256).max);
+            IPool(address(data.slp_WETH)).supply(
+                address(data.after_token),
+                after_token,
+                lockaddress,
+                0
+            );
+        }
+        {// 取出A
+            (address aTokenAddress,)=getdebttokenadd(data.slp_WETH,data.before_token);
+            IERC20 scbeth = IERC20(aTokenAddress);
+            scbeth.transferFrom(
+                lockaddress,address(this),
+                data.Ain
+            );
+            IERC20(data.before_token).approve(address(data.slp_WETH),type(uint256).max);
+            IPool(address(data.slp_WETH)).withdraw(
+                address(data.before_token), 
+                data.Ain,
+                address(this)
+            );
+        }
+        {//swap A2ETH
+            IPancakeV3Factory factory=IPancakeV3Factory(data.quoter.factory());
+            IPancakeV3Pool pool = IPancakeV3Pool(
+                factory.getPool(
+                    address(data.before_token),
+                    address(data.middle_token),
+                    data.fee
+            ));
+            pool.swap(
+                address(this),
+                address(data.before_token)==pool.token0(),
+                int256(data.Ain),
+                (address(data.before_token)==pool.token0() ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1),
+                abi.encode(opcodeAdata({
+                    stakein:4,
+                    data:new bytes(0)
+                }))
+            );
+        }
+        {//pay ETH
+            IERC20(data.middle_token).transfer(msg.sender,middle_token);
+        }
+        console.log("true amount:",after_token);
     }
-    // function _twice_changing_collateral(
-    //     int256 amount0Delta,
-    //     int256 amount1Delta,
-    //     bytes calldata _data
-    // )internal{
-    //     twice_changing_collateralDate memory data = abi.decode(_data, (twice_changing_collateralDate));
-    //     //旧质押品
-    //     uint256 before_token= uint256(-(IPancakeV3Pool(msg.sender).token0() == address(data.before_token) ? amount0Delta:amount1Delta));
-    //     //中间抵押品
-    //     uint256 middle_token= uint256((IPancakeV3Pool(msg.sender).token0() == address(data.middle_token) ? amount0Delta:amount1Delta));
-
-    //     IPancakeV3Factory factory=IPancakeV3Factory(data.quoter.factory());
-    //     IPancakeV3Pool pool = IPancakeV3Pool(
-    //         factory.getPool(
-    //             address(data.middle_token),
-    //             address(data.after_token),
-    //             data.fee
-    //     ));
-    //     _data.stakein=3;
-    //     pool.swap(
-    //         address(this),
-    //         address(data.middle_token)==pool.token0(),
-    //         int256(middle_token),
-    //         (address(data.middle_token)==pool.token0() ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1),
-    //         abi.decode(_data, (SwapCallbackData))
-    //     );
-    // }
     function getdebttokenadd(IPool slp_WETH,address token)public view returns(
         address aTokenAddress,
         address variableDebtTokenAddress

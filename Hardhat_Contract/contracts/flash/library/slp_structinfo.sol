@@ -45,25 +45,26 @@ contract slp_structinfo{
     }
 
 
-    struct one_changing_collateralDate{
-        IERC20 before_token;
-        IERC20 after_token;
-        uint24 fee;
+    struct s_twice_changeinfo_input{
+        address[] tokens;
+        uint24[] fees;
         IQuoterV2 quoter;
         IPool slp_WETH;
 
-        uint256 b2aPricelimit;
+        uint256 limitA2Bprice;
+        uint256 Ain;
+        uint256 sil;
     }
+
     struct twice_changing_collateralDate{
-        IERC20 before_token;
-        IERC20 after_token;
+        address before_token;
+        address after_token;
         uint24 fee;
         IQuoterV2 quoter;
         IPool slp_WETH;
-
-        uint256 b2aPricelimit;
         
-        IERC20 middle_token;
+        address middle_token;
+        uint256 Ain;
     }
 
 

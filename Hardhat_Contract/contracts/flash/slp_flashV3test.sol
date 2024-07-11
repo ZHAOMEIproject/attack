@@ -8,7 +8,7 @@ import './library/slp_structinfo.sol';
 import './mod/slpswapmod.sol';
 import './mod/help.sol';
 import "hardhat/console.sol";
-contract slp_flashV3test is slp_structinfo,slpswapmod,help{
+contract slp_flashV3test is slpswapmod,help{
     uint256 public immutable decimals=4;
     function eth2cbethprice(
         s_stakeininfo_input memory stakeininfo_input
@@ -55,6 +55,35 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
             )
         );
         flag=wiseamount>amountIn;
+    }
+    function Ain2Bprice(
+        s_twice_changeinfo_input memory twice_changeinfo_input
+    ) public returns(uint256 amountIn,uint256 wiseamount,uint256 amountOut,uint160[] memory sqrtPriceX96AfterList,bool flag)
+    {
+        amountIn=
+        twice_changeinfo_input.Ain;
+        wiseamount=
+        amountIn * twice_changeinfo_input.limitA2Bprice*twice_changeinfo_input.sil/10**(decimals+18);
+        bytes memory path=encodePath(
+            twice_changeinfo_input.tokens,
+            twice_changeinfo_input.fees
+        );
+        (
+            amountOut,sqrtPriceX96AfterList,,
+        )=twice_changeinfo_input.quoter.quoteExactInput(
+            path,
+            amountIn
+        );
+        flag=wiseamount<amountOut;
+        console.log(
+            "amountOut: ", uint2str(amountOut), 
+            "wish amount: ", uint2str(wiseamount)
+        );
+        require(flag,string(abi.encodePacked(
+            "bad price",
+            ", amountOut: ", uint2str(amountOut), 
+            ", wish amount: ", uint2str(wiseamount)
+        )));
     }
 
     function stakein(s_stakeininfo_input memory params)LOCK payable public {
@@ -128,9 +157,51 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
         );
         
     }
-    // function one_changing_collateral()public{
-
-    // }
+    function twice_changing_collateral(s_twice_changeinfo_input memory params)LOCK public{
+        (uint256 amountIn,uint256 wiseamount,uint256 amountOut,uint160[] memory sqrtPriceX96AfterList,bool flag)
+        =Ain2Bprice(params);
+        (
+            uint256 ethamount,,,
+        )=params.quoter.quoteExactInputSingle(
+            IQuoterV2.QuoteExactInputSingleParams(
+                address(params.tokens[0]),
+                address(params.tokens[1]),
+                amountIn,
+                params.fees[0],
+                0
+            )
+        );
+        bytes memory data =abi.encode(
+            opcodeAdata({
+                stakein:3,
+                data:
+                abi.encode(twice_changing_collateralDate({
+                    before_token:params.tokens[0],
+                    middle_token:params.tokens[1],
+                    after_token:params.tokens[2],
+                    fee: params.fees[1],
+                    quoter:params.quoter,
+                    slp_WETH:params.slp_WETH,
+                    Ain:amountIn
+                }))
+            })
+        );
+        
+        IPancakeV3Factory factory=IPancakeV3Factory(params.quoter.factory());
+        IPancakeV3Pool pool = IPancakeV3Pool(
+            factory.getPool(
+                address(params.tokens[1]),
+                address(params.tokens[2]),
+                params.fees[0]
+        ));
+        pool.swap(
+            address(this),
+            address(params.tokens[1])==pool.token0(),
+            int256(ethamount),
+            sqrtPriceX96AfterList[1],
+            data
+        );
+    }
 
     function uniswapV3SwapCallback(
         int256          amount0Delta,
@@ -180,17 +251,39 @@ contract slp_flashV3test is slp_structinfo,slpswapmod,help{
         //         _data
         //     );
         // }
-        //  else if(data.stakein==3){
-        //     if (amount0Delta <= 0 && amount1Delta <= 0) revert V3InvalidSwap(); // swaps entirely within 0-liquidity regions are not supported
-        //     (, address payer) = abi.decode(data, (bytes, address));
-        //     bytes calldata path = data.toBytes(0);
-
-        // }
+         else if(data.stakein==3){
+            _twice_changing_collateral(
+                amount0Delta,
+                amount1Delta,
+                _data
+            );
+        }
+        else if(data.stakein==4){
+            if (amount0Delta>0) {
+                IPancakeV3Pool pool = IPancakeV3Pool(msg.sender);
+                IERC20(pool.token0()).transfer(msg.sender,uint256(amount0Delta));
+            }else if(amount1Delta>0) {
+                IPancakeV3Pool pool = IPancakeV3Pool(msg.sender);
+                IERC20(pool.token1()).transfer(msg.sender,uint256(amount1Delta));
+            }
+        }
 
     }
     receive() external payable {
     }
     fallback() external payable {
     }
-    
+    function encodePath(
+        address[] memory tokens,
+        uint24[] memory fees
+    ) internal pure returns (bytes memory path) {
+        require(tokens.length == fees.length + 1, "Path: tokens and fees length mismatch");
+
+        for (uint256 i = 0; i < fees.length; i++) {
+            path = abi.encodePacked(path, tokens[i], fees[i]);
+        }
+
+        // Add the final token
+        path = abi.encodePacked(path, tokens[tokens.length - 1]);
+    }
 }

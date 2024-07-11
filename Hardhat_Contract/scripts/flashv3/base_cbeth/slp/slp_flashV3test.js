@@ -1,17 +1,18 @@
-// npx hardhat run scripts/flashv3/base_cbeth/slp_flashV3test.js --network dev
-// npx hardhat run scripts/flashv3/base_cbeth/slp_flashV3test.js --network hardhat
-// npx hardhat run scripts/flashv3/base_cbeth/slp_flashV3test.js --network zhaomei
-// npx hardhat run scripts/flashv3/base_cbeth/slp_flashV3test.js --network mzhaomei
+// npx hardhat run scripts/flashv3/base_cbeth/slp/slp_flashV3test.js --network dev
+// npx hardhat run scripts/flashv3/base_cbeth/slp/slp_flashV3test.js --network hardhat
+// npx hardhat run scripts/flashv3/base_cbeth/slp/slp_flashV3test.js --network zhaomei
+// npx hardhat run scripts/flashv3/base_cbeth/slp/slp_flashV3test.js --network mzhaomei
 const hre = require("hardhat");
 var contractinfo = new Object();
 async function main() {
     var [owner, addr1, addr2] = await ethers.getSigners();
     {//check vm
         console.log(
+            owner.address,
             await ethers.provider.getBalance(owner.address)
         );
     }
-    let cbethprice = 0.853794;
+    let cbethprice = 0.853878;
     let multiplier = 10;
     let eth_amount = 1;
     let swapfee = 1 / 10 ** 4
@@ -32,8 +33,14 @@ async function main() {
         CBETH: "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452",
         fee: swapfee * 10 ** 6,//
         multiplier: multiplier * (10 ** 4),
+        // uinswap
         swap: "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
-        sil: (10 ** 4) - 100
+        // pancakeswap
+        // swap: "0xB048Bbc1Ee6b733FFfCFb9e9CeF7375518e25997",
+        // Aerodrome
+        // swap: "0x254cF9E1E6e233aa1AC962CB9B05b2cfeAaE15b0",
+
+        sil: (10 ** 4) - 2
     }
     info["stakein"] = [
         info.WETH,//WETH
@@ -94,6 +101,7 @@ async function main() {
         "scbeth.balanceOf:", await scbeth.balanceOf(owner),
         "debttoken.balanceOf:", await debttoken.balanceOf(owner)
     );
+    return
     await scbeth.approve(slp_flashV3test, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     let bf_amount = await ethers.provider.getBalance(owner.address);
     await slp_flashV3test.stakeout(
