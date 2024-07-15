@@ -202,6 +202,25 @@ contract slp_flashV3test is slpswapmod,help{
             data
         );
     }
+    function get_userinfo(s_twice_changeinfo_input memory params)public view returns(uint256 befortoken,uint256 aftertoken){
+        twice_changing_collateralDate memory data = twice_changing_collateralDate({
+            before_token:params.tokens[0],
+            middle_token:params.tokens[1],
+            after_token:params.tokens[2],
+            fee: params.fees[1],
+            quoter:params.quoter,
+            slp_WETH:params.slp_WETH,
+            Ain:0
+        });
+        (address aTokenAddress,)=getdebttokenadd(data.slp_WETH,data.before_token);
+        (address bTokenAddress,)=getdebttokenadd(data.slp_WETH,data.after_token);
+        befortoken = IERC20(aTokenAddress).balanceOf(msg.sender);
+        aftertoken = IERC20(bTokenAddress).balanceOf(msg.sender);
+        console.log(
+            "befortoken: ",befortoken,
+            "aftertoken: ",aftertoken
+        );
+    }
 
     function uniswapV3SwapCallback(
         int256          amount0Delta,

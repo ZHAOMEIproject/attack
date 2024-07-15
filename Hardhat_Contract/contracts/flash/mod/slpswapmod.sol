@@ -132,7 +132,6 @@ contract slpswapmod is slp_structinfo{
         {//pay ETH
             IERC20(data.middle_token).transfer(msg.sender,middle_token);
         }
-        console.log("true amount:",after_token);
     }
     function getdebttokenadd(IPool slp_WETH,address token)public view returns(
         address aTokenAddress,

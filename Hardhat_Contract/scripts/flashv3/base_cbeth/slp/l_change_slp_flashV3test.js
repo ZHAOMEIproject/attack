@@ -1,8 +1,8 @@
-// npx hardhat run scripts/flashv3/base_cbeth/slp/change_slp_flashV3test.js --network dev
-// npx hardhat run scripts/flashv3/base_cbeth/slp/change_slp_flashV3test.js --network hardhat
-// npx hardhat run scripts/flashv3/base_cbeth/slp/change_slp_flashV3test.js --network zhaomei
-// npx hardhat run scripts/flashv3/base_cbeth/slp/change_slp_flashV3test.js --network mzhaomei
-// npx hardhat run scripts/flashv3/base_cbeth/slp/change_slp_flashV3test.js --network base
+// npx hardhat run scripts/flashv3/base_cbeth/slp/l_change_slp_flashV3test.js --network dev
+// npx hardhat run scripts/flashv3/base_cbeth/slp/l_change_slp_flashV3test.js --network hardhat
+// npx hardhat run scripts/flashv3/base_cbeth/slp/l_change_slp_flashV3test.js --network zhaomei
+// npx hardhat run scripts/flashv3/base_cbeth/slp/l_change_slp_flashV3test.js --network mzhaomei
+// npx hardhat run scripts/flashv3/base_cbeth/slp/l_change_slp_flashV3test.js --network base
 const hre = require("hardhat");
 var contractinfo = new Object();
 async function main() {
@@ -31,14 +31,10 @@ async function main() {
         otherCBETH: "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
         fee: swapfee * 10 ** 6,//
         multiplier: multiplier * (10 ** 4),
-        // uinswap
         swap: "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
-        // pancakeswap
-        // swap: "0xB048Bbc1Ee6b733FFfCFb9e9CeF7375518e25997",
-        // Aerodrome
-        // swap: "0x254cF9E1E6e233aa1AC962CB9B05b2cfeAaE15b0",
 
-        sil: (10 ** 4) - 1
+        sil: (10 ** 4) - 1,
+        flashV3test: "0x545cd3b239bacf1c1a8009826e338bedd312aab6",
     }
     info["change"] = [
         // [info.CBETH,info.otherCBETH],
@@ -51,24 +47,14 @@ async function main() {
         info.Ain,
         info.sil
     ]
-    var slp_cWETHv3 = new ethers.Contract(
-        info.slp_cWETHv3,
-        (await artifacts.readArtifact(
-            "contracts/flash/seamlessprotocol/interfaces/IPool.sol:IPool"
-        )).abi,
-        owner
-    );
-    // await slp_cWETHv3.setUserEMode(1);
-    var slp_flashV3test = await ethers.deployContract("slp_flashV3test");
-    let scbeth = new ethers.Contract(
-        (await slp_flashV3test.getdebttokenadd(slp_cWETHv3, info.CBETH)).aTokenAddress,
-        (await artifacts.readArtifact("contracts/flash/seamlessprotocol/dependencies/openzeppelin/contracts/IERC20.sol:IERC20")).abi,
+    var slp_flashV3test = new ethers.Contract(
+        info.flashV3test,
+        (await artifacts.readArtifact("slp_flashV3test")).abi,
         owner
     );
     console.log(
         await slp_flashV3test.get_userinfo(info["change"]),
     );
-    await scbeth.approve(slp_flashV3test, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
     await slp_flashV3test.twice_changing_collateral(info["change"]);
     console.log("finish changing");
     console.log(
