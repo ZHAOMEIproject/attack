@@ -1,8 +1,8 @@
-// npx hardhat run scripts/flashv3/base_cbeth/slp/change_slp_flashV3test.js --network dev
-// npx hardhat run scripts/flashv3/base_cbeth/slp/change_slp_flashV3test.js --network hardhat
-// npx hardhat run scripts/flashv3/base_cbeth/slp/change_slp_flashV3test.js --network zhaomei
-// npx hardhat run scripts/flashv3/base_cbeth/slp/change_slp_flashV3test.js --network mzhaomei
-// npx hardhat run scripts/flashv3/base_cbeth/slp/change_slp_flashV3test.js --network base
+// npx hardhat run scripts/flashv3/base_cbeth/slp/WST2CBl_change_slp_flashV3test.js --network dev
+// npx hardhat run scripts/flashv3/base_cbeth/slp/WST2CBl_change_slp_flashV3test.js --network hardhat
+// npx hardhat run scripts/flashv3/base_cbeth/slp/WST2CBl_change_slp_flashV3test.js --network zhaomei
+// npx hardhat run scripts/flashv3/base_cbeth/slp/WST2CBl_change_slp_flashV3test.js --network mzhaomei
+// npx hardhat run scripts/flashv3/base_cbeth/slp/WST2CBl_change_slp_flashV3test.js --network base
 const hre = require("hardhat");
 var contractinfo = new Object();
 async function main() {
@@ -13,10 +13,10 @@ async function main() {
             await ethers.provider.getBalance(owner.address)
         );
     }
-    let A2Bprice = 0.9181876444997806
+    let A2Bprice = 1.1
     let multiplier = 10;
     let swapfee = 1 / 10 ** 4
-    let A_swapamount = 10;
+    let A_swapamount = 1;
     let totalfee = (swapfee * 2 * 3.5 * multiplier)
     console.log(
         "totalfee:", totalfee * 100,
@@ -27,13 +27,18 @@ async function main() {
         limitA2Bprice: ethers.parseEther(A2Bprice.toString()),
         slp_cWETHv3: "0x8F44Fd754285aa6A2b8B9B97739B79746e0475a7",
         WETH: "0x4200000000000000000000000000000000000006",
-        // CBETH: "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452",
-        // otherCBETH: "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
-        CBETH: "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
-        otherCBETH: "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452",
+        CBETH: "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452",
+        otherCBETH: "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+        // CBETH: "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+        // otherCBETH: "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452",
         fee: swapfee * 10 ** 6,//
         multiplier: multiplier * (10 ** 4),
+        // uinswap
         swap: "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
+        // pancakeswap
+        // swap: "0xB048Bbc1Ee6b733FFfCFb9e9CeF7375518e25997",
+        // Aerodrome
+        // swap: "0x254cF9E1E6e233aa1AC962CB9B05b2cfeAaE15b0",
 
         sil: (10 ** 4) - 0,
         flashV3test: "0x545cd3b239bacf1c1a8009826e338bedd312aab6",
@@ -49,29 +54,25 @@ async function main() {
         info.Ain,
         info.sil
     ]
-    var slp_cWETHv3 = new ethers.Contract(
-        info.slp_cWETHv3,
-        (await artifacts.readArtifact(
-            "contracts/flash/seamlessprotocol/interfaces/IPool.sol:IPool"
-        )).abi,
+    var slp_flashV3test = new ethers.Contract(
+        info.flashV3test,
+        (await artifacts.readArtifact("slp_flashV3test")).abi,
         owner
     );
-    // await slp_cWETHv3.setUserEMode(1);
-    var slp_flashV3test = await ethers.deployContract("slp_flashV3test");
+    console.log(info["change"]);
     let scbeth = new ethers.Contract(
-        (await slp_flashV3test.getdebttokenadd(slp_cWETHv3, info.CBETH)).aTokenAddress,
+        "0x2c159A183d9056E29649Ce7E56E59cA833D32624",
         (await artifacts.readArtifact("contracts/flash/seamlessprotocol/dependencies/openzeppelin/contracts/IERC20.sol:IERC20")).abi,
         owner
     );
-    console.log(
-        await slp_flashV3test.get_userinfo(info["change"]),
-    );
-    await scbeth.approve(slp_flashV3test, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    // if ((await scbeth.allowance(owner, slp_flashV3test)) < info.Ain) {
+    // await scbeth.approve(slp_flashV3test, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+    // }
     await slp_flashV3test.twice_changing_collateral(info["change"]);
     console.log("finish changing");
-    console.log(
-        await slp_flashV3test.get_userinfo(info["change"]),
-    );
+    // console.log(
+    //     await slp_flashV3test.get_userinfo(info["change"]),
+    // );
 
 }
 main().catch((error) => {

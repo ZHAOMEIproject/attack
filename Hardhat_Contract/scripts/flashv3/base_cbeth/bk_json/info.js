@@ -3,6 +3,12 @@ let info = {
     cbeth: "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
     wsteth: "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452",
     weth: "0x4200000000000000000000000000000000000006",
+    // uinswap
+    swap: "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
+    // pancakeswap
+    // swap: "0xB048Bbc1Ee6b733FFfCFb9e9CeF7375518e25997",
+    // Aerodrome
+    // swap: "0x254cF9E1E6e233aa1AC962CB9B05b2cfeAaE15b0",
 }
 
 // stake in
@@ -17,3 +23,28 @@ let info = {
     9998
 ]
 // change
+[
+    [
+        "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22",
+        "0x4200000000000000000000000000000000000006",
+        "0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452"
+    ],
+    [100, 100],
+    "0x8F44Fd754285aa6A2b8B9B97739B79746e0475a7",
+    "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
+    1089200000000000000,
+    22870000000000000000,
+    9999
+]
+let next_changeinfo = {
+    his_bigA: 1.0893637692,
+    his_bigB: 0.918430242050,
+
+    last_wst2cbprice: 1.089102,
+    last_re_price: 0.918187192553329,
+    next_recommendprice: 1.0887752694,
+    next_re_recommendprice: 0.9182794724470253,
+    needprice: 0.9181876444997806,
+}
+
+1.0893930730168073
